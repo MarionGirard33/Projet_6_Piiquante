@@ -1,0 +1,4 @@
+node_modules
+# Ignorer toutes les images
+*.jpg
+*.png
