@@ -6,6 +6,8 @@ const mongodbErrorHandler = require('mongoose-mongodb-errors');
 const path = require('path');
 const rateLimit = require("express-rate-limit");
 const mongoSanitize = require('express-mongo-sanitize');
+const redirect = require('./middleware/redirect');
+const cors = require('cors');
 
 const sauceRoutes = require("./routes/sauce");
 const userRoutes = require("./routes/user");
@@ -15,21 +17,20 @@ const app = express();
 // Ajout du plugin pour gérer les erreurs de la base de données
 mongoose.plugin(mongodbErrorHandler);
 
-// Creating a limiter by calling rateLimit function with options:
-// max contains the maximum number of request and windowMs 
-// contains the time in millisecond so only max amount of 
-// request can be made in windowMS time.
+// Création d'un limiteur en appelant la fonction rateLimit avec des options :
+// max contient le nombre maximum de demandes et windowMs contient le temps en millisecondes pour que seule la quantité maximale de demandes puisse être faite dans le temps de la fenêtreMS. 
 const limiter = rateLimit({
-  max: 100,
+  max: 200,
   windowMs: 60 * 60 * 1000,
   message: "Too many request from this IP"
 });
 app.use(limiter);
 
 // Ajout du plugin Helmet qui configure des en-têtes HTTP sécurisées
-app.use(helmet());
+app.use(helmet({crossOriginResourcePolicy: false}));
+app.use(cors());
 
-// By default, $ and . characters are removed completely from user-supplied input in the following places:
+// Par défaut, les caractères $ et . sont complètement supprimés des entrées fournies par l'utilisateur aux endroits suivants :
 // - req.body
 // - req.params
 // - req.headers
@@ -39,7 +40,7 @@ app.use(mongoSanitize());
 // Ajout des Headers de requête dans l'objet response pour la sécurité CORS du navigateur
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+  res.setHeader("Cross-Origin-Resource-Policy", '*');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   next();
@@ -48,11 +49,13 @@ app.use((req, res, next) => {
 // Connection à la base de données MongoDB 
 mongoose.connect(`mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER_NAME}.k0ozame.mongodb.net/?retryWrites=true&w=majority`,
   { useNewUrlParser: true,
-    useUnifiedTopology: true })
-.then(() => console.log('Connexion à MongoDB réussie !'))
-.catch(() => console.log('Connexion à MongoDB échouée !'));
+    useUnifiedTopology: true,
+    dbName: process.env.DB_NAME })
+.then(() => console.log('Connexion à la base de données réussie !'))
+.catch(() => console.log('Connexion à la base de données échouée !'));
 
 app.use(express.json());
+app.use(redirect);
 
 app.use("/api/sauces", sauceRoutes);
 app.use("/api/auth", userRoutes);

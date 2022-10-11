@@ -1,7 +1,14 @@
 const http = require('http');
-//const app = require("https-localhost")('./app');
-//app.redirect();
+const https = require('https');
 const app = require('./app');
+const fs = require("fs");
+const path = require("path");
+
+// Ajout des certificats SSL pour le HTTPS
+const options ={
+  key:fs.readFileSync(path.join(__dirname,'./certificats/key.pem'), 'utf8'),
+  cert:fs.readFileSync(path.join(__dirname,'./certificats/server.crt'), 'utf8') 
+}
 
 const normalizePort = val => {
   const port = parseInt(val, 10);
@@ -14,6 +21,8 @@ const normalizePort = val => {
   }
   return false;
 };
+
+const httpsPort = normalizePort('3001');
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
@@ -37,7 +46,9 @@ const errorHandler = error => {
   }
 };
 
+// Création des serveurs
 const server = http.createServer(app);
+const httpsServer = https.createServer(options, app);
 
 server.on('error', errorHandler);
 server.on('listening', () => {
@@ -46,4 +57,13 @@ server.on('listening', () => {
   console.log('Listening on ' + bind);
 });
 
+httpsServer.on('error', errorHandler);
+httpsServer.on('listening', () => {
+  const address = httpsServer.address();
+  const bind = typeof address === 'string' ? 'pipe ' + address : 'port ' + httpsPort;
+  console.log('Listening on ' + bind);
+});
+
+// Ecoute des ports 
 server.listen(port);
+httpsServer.listen(httpsPort);

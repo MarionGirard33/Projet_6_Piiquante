@@ -24,9 +24,9 @@ passwordSchema
 // Création du controleur pour que l'utilisateur s'enregistre
 exports.signup = (req, res, next) => {
     if (!emailValidator.validate(req.body.email)) {
-        throw "L'adresse email doit être valide !"
+        return  res.status(400).json( new Error("L'adresse email doit être valide !"));
     } else if (!passwordSchema.validate(req.body.password)) {
-        throw "Le mot de passe doit avoir une longueur entre 8 et 30 caractères avec au minimum 1 chiffre, 1 minuscule et 1 majuscule, sans espace !"
+        return  res.status(400).json( new Error("Le mot de passe doit avoir une longueur entre 8 et 30 caractères avec au minimum 1 chiffre, 1 minuscule et 1 majuscule, sans espace !")); 
     } else {
         bcrypt.hash(req.body.password, 10)
         .then(hash => {
@@ -36,7 +36,7 @@ exports.signup = (req, res, next) => {
             });
             user.save()
             .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-            .catch(error => res.status(400).json({ error }));
+            .catch(error => res.status(500).json({ error }));
         })
         .catch(error => res.status(500).json({ error }));
     }
@@ -58,7 +58,7 @@ exports.login = (req, res, next) => {
                             userId: user._id,
                             token: jwt.sign(
                                 { userId: user._id },
-                                "RANDOM_TOKEN_SECRET",
+                                `${process.env.KEY}`,
                                 { expiresIn: "24h"}
                             )
                         });

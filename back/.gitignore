@@ -1,5 +1,4 @@
 node_modules
 .env
-# Ignorer toutes les images
-*.jpg
-*.png
+/images
+/certificats
