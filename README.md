@@ -1,20 +1,21 @@
-Projet 6 OpenClassrooms Piiquante
+Projet 6 OpenClassrooms Piiquante - Création d'une API
 
-Démarrer le serveur :
+Lancement du serveur Node
 
-ls
-cd backend
-nodemon server ou node serve.js
+- cd back
+- npm install
+- nodemon server
 
-Démarrer le frontend : 
+Lancement de l'API
 
-lsfrontend
-cd Web-Developer-P6
-npm install
-npm run start
+- Se connecter à l'url : http://localhost:4200
 
-Language utilisé et outils :
+Renseigner les variables d'environnement
 
-JAVASCRIPT sans FrameWorks, et NODE
-base de données utilisée
-MONGO DB
+- compléter un fichier .env dans le dossier back en le renseignant comme dans .env_sample avec les informations de connexion à votre cluster MongoDB
+
+Redirection HTTP vers HTTPS
+
+- Créer des certificats SSL dans un dossier certificats à la racine de back (https://deviloper.in/ssl-certificate-in-nodejs)
+- En cas de souci avec le certificat au premier chargement de la page, essayer d'accèder à une route de l'API depuis le navigateur (exemple https://localhost:3001/api/sauces) et autoriser à poursuivre la navigation
+
